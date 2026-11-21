@@ -1,37 +1,52 @@
+// ============================================
+// NULL — INTERNAL TERMINAL
+// SYSTEM CONFIGURATION
+// ============================================
 
-/* ==========================================
-   THE PARALLEL — E.L.B.E.R.R.
-   SUPABASE CONFIGURATION
-========================================== */
-
+// COLOQUE SUAS CREDENCIAIS DO SUPABASE AQUI
 const SUPABASE_URL = "kmspdmjaygkjjdlulkmd";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_-Do8npRRSIRSqyMxEIcwig_cuKWcF1X";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+const isSupabaseConfigured =
+  !SUPABASE_URL.startsWith("YOUR_") &&
+  !SUPABASE_PUBLISHABLE_KEY.startsWith("YOUR_");
+
+const supabaseClient = isSupabaseConfigured
+  ? window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    )
+  : null;
+
+
+// ============================================
+// SYSTEM STATE
+// ============================================
 
 let authMode = "login";
 let currentUser = null;
 let characters = [];
 
-/* ==========================================
-   DOM HELPERS
-========================================== */
+
+// ============================================
+// DOM REFERENCES
+// ============================================
 
 const $ = (id) => document.getElementById(id);
 
 const authView = $("auth-view");
 const dashboardView = $("dashboard-view");
+
 const authForm = $("auth-form");
 const authMessage = $("auth-message");
+
 const characterDialog = $("character-dialog");
 const characterForm = $("character-form");
 
-/* ==========================================
-   CLOCK / FOOTER
-========================================== */
+
+// ============================================
+// SYSTEM CLOCK
+// ============================================
 
 $("year").textContent = new Date().getFullYear();
 
@@ -45,22 +60,23 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ==========================================
-   LOGIN / SIGNUP SWITCH
-========================================== */
+
+// ============================================
+// AUTHENTICATION TABS
+// ============================================
 
 document.querySelectorAll(".tab").forEach((tab => {
   tab.addEventListener("click", () => {
     authMode = tab.dataset.auth;
 
-    document.querySelectorAll(".tab").forEach(t => {
+    document.querySelectorAll(".tab").forEach((t => {
       t.classList.toggle("active", t === tab);
-    });
+    }));
 
     $("auth-submit").innerHTML =
       authMode === "login"
-        ? 'AUTENTICAR <span>→</span>'
-        : 'CRIAR CREDENCIAL <span>→</span>';
+        ? 'VERIFY IDENTITY <span>→</span>'
+        : 'REGISTER CREDENTIALS <span>→</span>';
 
     $("password").autocomplete =
       authMode === "login"
@@ -71,69 +87,89 @@ document.querySelectorAll(".tab").forEach((tab => {
   });
 }));
 
-/* ==========================================
-   AUTHENTICATION
-========================================== */
+
+// ============================================
+// LOGIN / REGISTER
+// ============================================
 
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  authMessage.textContent = "PROCESSANDO...";
+  if (!supabaseClient) {
+    authMessage.textContent =
+      "SYSTEM CONFIGURATION REQUIRED // SUPABASE CREDENTIALS MISSING";
+    return;
+  }
+
+  authMessage.textContent = "PROCESSING REQUEST...";
 
   const email = $("email").value.trim();
   const password = $("password").value;
 
   let result;
 
-  if (authMode === "login") {
-    result = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-  } else {
-    result = await supabaseClient.auth.signUp({
-      email,
-      password
-    });
-  }
+  try {
+    if (authMode === "login") {
+      result = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+    } else {
+      result = await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+    }
 
-  if (result.error) {
-    authMessage.textContent = result.error.message;
-    return;
-  }
+    if (result.error) {
+      authMessage.textContent =
+        "AUTHENTICATION FAILED // " + result.error.message;
+      return;
+    }
 
-  // Cadastro com confirmação de email ativada
-  if (authMode === "signup" && !result.data.session) {
+    // Account created, email confirmation may be required.
+    if (authMode === "signup" && !result.data.session) {
+      authMessage.textContent =
+        "REGISTRATION INITIATED // CHECK YOUR EMAIL TO CONFIRM CREDENTIALS";
+      return;
+    }
+
+    authMessage.textContent = "";
+
+    if (result.data.user) {
+      currentUser = result.data.user;
+      await showDashboard();
+    }
+
+  } catch (error) {
     authMessage.textContent =
-      "Cadastro iniciado. Verifique seu email para confirmar a conta.";
-    return;
-  }
-
-  authMessage.textContent = "";
-
-  if (result.data.user) {
-    currentUser = result.data.user;
-    await showDashboard();
+      "SYSTEM ERROR // " + error.message;
   }
 });
 
-/* ==========================================
-   LOGOUT
-========================================== */
+
+// ============================================
+// LOGOUT
+// ============================================
 
 $("logout-btn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
+  if (supabaseClient) {
+    await supabaseClient.auth.signOut();
+  }
 
   currentUser = null;
   characters = [];
 
   dashboardView.classList.add("hidden");
   authView.classList.remove("hidden");
+
+  authMessage.textContent = "SESSION TERMINATED.";
 });
 
-/* ==========================================
-   CHARACTER DIALOG
-========================================== */
+
+// ============================================
+// CHARACTER SYSTEM
+// ============================================
 
 $("new-character-btn").addEventListener("click", () => {
   openCharacterDialog();
@@ -147,9 +183,10 @@ $("cancel-btn").addEventListener("click", () => {
   characterDialog.close();
 });
 
-/* ==========================================
-   DASHBOARD
-========================================== */
+
+// ============================================
+// DASHBOARD
+// ============================================
 
 async function showDashboard() {
   authView.classList.add("hidden");
@@ -158,18 +195,21 @@ async function showDashboard() {
   await loadCharacters();
 }
 
-/* ==========================================
-   LOAD CHARACTERS
-========================================== */
+
+// ============================================
+// LOAD CHARACTER RECORDS
+// ============================================
 
 async function loadCharacters() {
+  if (!supabaseClient || !currentUser) return;
+
   const { data, error } = await supabaseClient
     .from("characters")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error(error);
+    console.error("ARCHIVE RETRIEVAL ERROR:", error);
     return;
   }
 
@@ -181,9 +221,10 @@ async function loadCharacters() {
   renderCharacters();
 }
 
-/* ==========================================
-   RENDER CHARACTER CARDS
-========================================== */
+
+// ============================================
+// RENDER CHARACTER RECORDS
+// ============================================
 
 function renderCharacters() {
   const list = $("characters-list");
@@ -195,14 +236,14 @@ function renderCharacters() {
     characters.length > 0
   );
 
-  characters.forEach((c, index) => {
-    const data = c.data || {};
-
-    const role = data.role || "OCUPAÇÃO NÃO INFORMADA";
-    const origin = data.origin || "ORIGEM NÃO INFORMADA";
+  characters.forEach((character, index) => {
+    const data = character.data || {};
 
     const card = document.createElement("article");
     card.className = "character-card";
+
+    const role = data.role || "ROLE NOT SPECIFIED";
+    const origin = data.origin || "ORIGIN NOT SPECIFIED";
 
     card.innerHTML = `
       <span class="card-id">
@@ -214,45 +255,42 @@ function renderCharacters() {
       <p></p>
 
       <div class="card-actions">
-        <button data-action="edit">EDITAR</button>
-        <button data-action="delete">EXCLUIR</button>
+        <button data-action="edit">EDIT RECORD</button>
+        <button data-action="delete">DELETE RECORD</button>
       </div>
     `;
 
-    // Usamos textContent para evitar inserir texto do usuário como HTML
-    card.querySelector("h4").textContent = c.name;
+    // Text is inserted safely without interpreting HTML.
+    card.querySelector("h4").textContent = character.name;
 
     const paragraphs = card.querySelectorAll("p");
-
     paragraphs[0].textContent = role;
     paragraphs[1].textContent = origin;
 
-    card
-      .querySelector('[data-action="edit"]')
+    card.querySelector('[data-action="edit"]')
       .addEventListener("click", () => {
-        openCharacterDialog(c);
+        openCharacterDialog(character);
       });
 
-    card
-      .querySelector('[data-action="delete"]')
+    card.querySelector('[data-action="delete"]')
       .addEventListener("click", () => {
-        deleteCharacter(c);
+        deleteCharacter(character);
       });
 
     list.appendChild(card);
   });
 }
 
-/* ==========================================
-   OPEN CHARACTER EDITOR
-========================================== */
+
+// ============================================
+// CHARACTER DIALOG
+// ============================================
 
 function openCharacterDialog(character = null) {
   $("character-message").textContent = "";
 
-  $("dialog-title").textContent = character
-    ? "EDITAR REGISTRO"
-    : "NOVO PERSONAGEM";
+  $("dialog-title").textContent =
+    character ? "EDIT PERSONNEL RECORD" : "NEW PERSONNEL RECORD";
 
   $("character-id").value = character?.id || "";
   $("character-name").value = character?.name || "";
@@ -263,17 +301,25 @@ function openCharacterDialog(character = null) {
   characterDialog.showModal();
 }
 
-/* ==========================================
-   SAVE CHARACTER
-========================================== */
+
+// ============================================
+// SAVE CHARACTER
+// ============================================
 
 characterForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+
+  if (!supabaseClient || !currentUser) {
+    $("character-message").textContent =
+      "SESSION INVALID // AUTHENTICATION REQUIRED";
+    return;
+  }
 
   const id = $("character-id").value;
 
   const payload = {
     owner_id: currentUser.id,
+
     name: $("character-name").value.trim(),
 
     data: {
@@ -287,41 +333,46 @@ characterForm.addEventListener("submit", async (event) => {
 
   let result;
 
-  if (id) {
-    // Atualizar personagem existente
-    result = await supabaseClient
-      .from("characters")
-      .update(payload)
-      .eq("id", id)
-      .eq("owner_id", currentUser.id);
-  } else {
-    // Criar personagem novo
-    result = await supabaseClient
-      .from("characters")
-      .insert(payload);
-  }
+  try {
+    if (id) {
+      result = await supabaseClient
+        .from("characters")
+        .update(payload)
+        .eq("id", id)
+        .eq("owner_id", currentUser.id);
+    } else {
+      result = await supabaseClient
+        .from("characters")
+        .insert(payload);
+    }
 
-  if (result.error) {
+    if (result.error) {
+      $("character-message").textContent =
+        "RECORD ERROR // " + result.error.message;
+      return;
+    }
+
+    characterDialog.close();
+
+    await loadCharacters();
+
+  } catch (error) {
     $("character-message").textContent =
-      result.error.message;
-    return;
+      "SYSTEM ERROR // " + error.message;
   }
-
-  characterDialog.close();
-
-  await loadCharacters();
 });
 
-/* ==========================================
-   DELETE CHARACTER
-========================================== */
+
+// ============================================
+// DELETE CHARACTER
+// ============================================
 
 async function deleteCharacter(character) {
-  const confirmed = confirm(
-    `Excluir permanentemente o registro "${character.name}"?`
+  const confirmation = confirm(
+    `PERMANENTLY DELETE RECORD "${character.name}"?`
   );
 
-  if (!confirmed) return;
+  if (!confirmation) return;
 
   const { error } = await supabaseClient
     .from("characters")
@@ -330,34 +381,47 @@ async function deleteCharacter(character) {
     .eq("owner_id", currentUser.id);
 
   if (error) {
-    alert(error.message);
+    alert("DELETION FAILED // " + error.message);
     return;
   }
 
   await loadCharacters();
 }
 
-/* ==========================================
-   INITIALIZATION
-========================================== */
+
+// ============================================
+// SESSION INITIALIZATION
+// ============================================
 
 async function init() {
-  // Evita tentar conectar enquanto os dados não estiverem configurados
-  if (
-    SUPABASE_URL.startsWith("YOUR_") ||
-    SUPABASE_PUBLISHABLE_KEY.startsWith("YOUR_")
-  ) {
+  if (!isSupabaseConfigured) {
     authMessage.textContent =
-      "Configure a URL e a publishable key do Supabase no arquivo script.js.";
+      "SYSTEM CONFIGURATION REQUIRED // SUPABASE URL AND PUBLISHABLE KEY MUST BE SET IN script.js";
     return;
   }
 
-  const { data } = await supabaseClient.auth.getSession();
+  try {
+    const { data, error } =
+      await supabaseClient.auth.getSession();
 
-  if (data.session) {
-    currentUser = data.session.user;
-    await showDashboard();
+    if (error) {
+      console.error("SESSION ERROR:", error);
+      return;
+    }
+
+    if (data.session) {
+      currentUser = data.session.user;
+      await showDashboard();
+    }
+
+  } catch (error) {
+    console.error("INITIALIZATION FAILURE:", error);
   }
 }
+
+
+// ============================================
+// BOOT SYSTEM
+// ============================================
 
 init();
