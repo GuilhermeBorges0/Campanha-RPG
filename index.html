@@ -54,8 +54,7 @@
         <div class="sheet-content">
           <section class="tab-content active" data-content="identificacao">
             <div class="form-grid two">
-              <label>NOME DO PERSONAGEM*<input id="charName" required maxlength="80"></label><label>JOGADOR<input id="playerName" maxlength="80"></label>
-              <label>ORIGEM<input id="origin" maxlength="100"></label><label>CLASSE<input id="charClass" maxlength="80"></label><label>CODINOME<input id="codename" maxlength="80"></label>
+              <label>NOME DO PERSONAGEM*<input id="charName" required maxlength="80"></label><label>OCUPAÇÃO<input id="occupation" maxlength="100"></label><label>CLASSE<select id="charClass"><option value="">SELECIONE</option><option value="Analista">ANALISTA</option><option value="Carrasco">CARRASCO</option></select></label><label>CODINOME<input id="codename" maxlength="80"></label>
             </div>
             <div class="resource-grid">
               <div class="resource-card"><div class="resource-head"><b>PV // PONTOS DE VIDA</b><span class="resource-controls"><button type="button" data-resource="PV" data-step="-1">−</button><button type="button" data-resource="PV" data-step="1">+</button></span></div><div class="resource-values"><input type="number" data-resource-current="PV" min="0"><span>/</span><input type="number" data-resource-max="PV" min="0"></div><div class="bar"><div id="pvBar"></div></div></div>
@@ -67,7 +66,7 @@
             <div class="attribute-grid" id="attributeGrid"></div>
             <div class="defense-box"><div><p class="eyebrow">DEFESA CALCULADA</p><small>6 + RES + proteção equipada</small></div><strong id="defenseValue">10</strong></div>
           </section>
-          <section class="tab-content" data-content="pericias"><p class="muted">Adicione perícias personalizadas. O dado é escolhido livremente; o atributo-base é apenas uma referência.</p><div id="skillsList" class="dynamic-list"></div><button type="button" class="secondary add-button" id="addSkillBtn">+ ADICIONAR PERÍCIA</button></section>
+          <section class="tab-content" data-content="pericias"><p class="muted">Lista fixa de perícias. Selecione o grau de treinamento; os valores são exibidos nos dados 2D.</p><div id="skillsList" class="dynamic-list"></div></section>
           <section class="tab-content" data-content="habilidades"><p class="muted">Registre habilidades próprias do personagem.</p><div id="abilitiesList" class="dynamic-list"></div><button type="button" class="secondary add-button" id="addAbilityBtn">+ ADICIONAR HABILIDADE</button></section>
           <section class="tab-content" data-content="inventario">
             <div class="inventory-tabs"><button type="button" class="inv-tab active" data-inv="items">ITENS</button><button type="button" class="inv-tab" data-inv="weapons">ARMAS</button><button type="button" class="inv-tab" data-inv="protections">PROTEÇÕES</button><button type="button" class="inv-tab" data-inv="load">CARGA</button></div>

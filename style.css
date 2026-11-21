@@ -18,3 +18,28 @@
 #newCharacterBtn:disabled{opacity:.65;border-color:#573d39;background:#211513;color:#bb766e;cursor:not-allowed}
 @media(max-width:980px){.page-layout{grid-template-columns:minmax(0,1fr) 260px;gap:16px;padding:0 18px}.anomaly-terminal{height:70vh}}
 @media(max-width:760px){.page-layout{display:flex;flex-direction:column;padding:0 14px}.page-layout main{padding:22px 0}.page-layout .auth-wrap{min-height:auto;justify-content:center;padding:20px 0}.anomaly-terminal{position:relative;top:auto;margin:0 0 22px;width:100%;height:220px;min-height:220px}.terminal-feed{font-size:9px}}
+
+/* Atributos e perícias — dados 2D com valor interno */
+.attribute-dice-card{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;min-width:0}
+.attribute-label{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.attribute-label strong{color:var(--bright);font-size:12px;letter-spacing:.08em}
+.attribute-label small{color:var(--muted);font-size:10px}
+.attribute-die{border:0;background:transparent;padding:0;width:104px;max-width:100%;display:grid;place-items:center}
+.attribute-die:hover{background:transparent;filter:brightness(1.3)}
+.die-svg{width:100%;height:auto;max-width:100px;overflow:visible}
+.die-svg polygon{fill:#2a58bd;stroke:#82aaff;stroke-width:3;filter:drop-shadow(0 0 5px #4278ff66)}
+.die-svg text{fill:#fff;font-family:var(--mono);font-weight:bold;font-size:28px}
+.attribute-select{max-width:110px;text-align:center;margin-top:0}
+.skill-group{margin-bottom:20px}
+.skill-group-title{font-size:12px;font-weight:400;letter-spacing:.16em;color:var(--green);border-bottom:1px solid var(--line);padding-bottom:8px;margin:0 0 10px}
+.skill-group-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.skill-card{border:1px solid var(--line);background:#101610;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.skill-card-heading{display:flex;flex-direction:column;gap:5px;min-width:0}
+.skill-card-heading strong{font-size:12px;font-weight:400;color:var(--text);overflow-wrap:anywhere}
+.skill-card-heading small{font-size:10px;color:var(--muted)}
+.skill-die-wrap{display:flex;align-items:center;gap:8px;min-width:120px}
+.skill-die-svg{width:44px;height:44px;flex:0 0 44px}
+.skill-die-svg polygon{fill:#2859c9;stroke:#85aaff;stroke-width:3}
+.skill-die-svg text{fill:#fff;font-family:var(--mono);font-size:28px;font-weight:bold}
+.skill-die-wrap select{margin:0;padding:6px 5px;font-size:10px;min-width:0}
+@media(max-width:520px){.skill-group-list{grid-template-columns:1fr}.attribute-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
