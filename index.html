@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE PARALLEL — E.L.B.E.R.R.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">E</span>
+        <div>
+          <strong>E.L.B.E.R.R.</strong>
+          <small>INFORMATION CONTROL DIVISION</small>
+        </div>
+      </div>
+      <div class="top-status">
+        <span class="status-dot"></span> SYSTEM ONLINE
+        <span class="divider">/</span>
+        <span id="clock">00:00:00</span>
+      </div>
+    </header>
+
+    <main>
+      <section id="auth-view" class="auth-view">
+        <div class="auth-copy">
+          <p class="eyebrow">INTERNAL ACCESS PORTAL // 00-17</p>
+          <h1>THE<br><span>PARALLEL</span></h1>
+          <p class="intro">
+            Toda informação possui uma origem, uma trajetória e um destino.<br>
+            Nosso trabalho é garantir que os três permaneçam registrados.
+          </p>
+          <div class="auth-warning">
+            <span>▲</span> ACESSO RESTRITO — IDENTIFIQUE-SE PARA CONTINUAR
+          </div>
+        </div>
+
+        <div class="auth-panel panel">
+          <div class="panel-head">
+            <span>IDENTIFICAÇÃO DE USUÁRIO</span>
+            <span class="panel-code">AUTH.01</span>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-auth="login">ENTRAR</button>
+            <button class="tab" data-auth="signup">CRIAR CONTA</button>
+          </div>
+
+          <form id="auth-form">
+            <label for="email">E-MAIL</label>
+            <input id="email" type="email" autocomplete="email"
+              placeholder="usuario@exemplo.com" required>
+
+            <label for="password">SENHA</label>
+            <input id="password" type="password"
+              autocomplete="current-password"
+              placeholder="••••••••••" required minlength="6">
+
+            <button class="primary-btn" type="submit" id="auth-submit">
+              AUTENTICAR <span>→</span>
+            </button>
+
+            <p id="auth-message" class="message"></p>
+          </form>
+
+          <p class="panel-foot">
+            AO CONTINUAR, VOCÊ CONFIRMA QUE ESTÁ AUTORIZADO
+            A ACESSAR ESTE TERMINAL.
+          </p>
+        </div>
+      </section>
+
+      <section id="dashboard-view" class="hidden">
+        <div class="welcome-row">
+          <div>
+            <p class="eyebrow">TERMINAL DO OPERADOR</p>
+            <h2>PAINEL DE CONTROLE</h2>
+            <p class="subtext">
+              Sessão autenticada. Seus registros estão sincronizados.
+            </p>
+          </div>
+          <button id="logout-btn" class="ghost-btn">
+            ENCERRAR SESSÃO ↗
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat panel">
+            <span>REGISTROS DE PERSONAGEM</span>
+            <strong id="character-count">00</strong>
+            <small>VINCULADOS AO OPERADOR</small>
+          </div>
+
+          <div class="stat panel">
+            <span>STATUS DA CONEXÃO</span>
+            <strong class="live">ESTÁVEL</strong>
+            <small>SUPABASE / AUTH + DB</small>
+          </div>
+
+          <div class="stat panel">
+            <span>CLASSIFICAÇÃO</span>
+            <strong>INTERNO</strong>
+            <small>ELBER-R / ACCESS TIER 01</small>
+          </div>
+        </div>
+
+        <section class="characters-section">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">DATABASE // PERSONNEL</p>
+              <h3>SEUS PERSONAGENS</h3>
+            </div>
+            <button id="new-character-btn" class="primary-btn compact">
+              + NOVO REGISTRO
+            </button>
+          </div>
+
+          <div id="characters-list" class="characters-grid"></div>
+
+          <div id="empty-state" class="empty-state hidden">
+            <div class="empty-symbol">∅</div>
+            <h4>NENHUM REGISTRO ENCONTRADO</h4>
+            <p>Crie seu primeiro personagem para iniciar o arquivo.</p>
+          </div>
+        </section>
+
+        <div class="bottom-note">
+          E.L.B.E.R.R. // A INTEGRIDADE DOS REGISTROS É RESPONSABILIDADE DO OPERADOR.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="character-dialog">
+    <form id="character-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">PERSONNEL FILE // CREATE OR EDIT</p>
+          <h3 id="dialog-title">NOVO PERSONAGEM</h3>
+        </div>
+        <button type="button" id="close-dialog" class="close-btn">×</button>
+      </div>
+
+      <input type="hidden" id="character-id">
+
+      <label for="character-name">NOME DO PERSONAGEM</label>
+      <input id="character-name" maxlength="80"
+        placeholder="Nome / codinome" required>
+
+      <div class="form-grid">
+        <div>
+          <label for="character-role">OCUPAÇÃO</label>
+          <input id="character-role" maxlength="80"
+            placeholder="Ex.: Investigador">
+        </div>
+        <div>
+          <label for="character-origin">ORIGEM</label>
+          <input id="character-origin" maxlength="120"
+            placeholder="Cidade, instituição etc.">
+        </div>
+      </div>
+
+      <label for="character-notes">NOTAS / HISTÓRICO</label>
+      <textarea id="character-notes" rows="5"
+        placeholder="Anotações de campo, história, observações..."></textarea>
+
+      <div class="dialog-actions">
+        <button type="button" id="cancel-btn" class="ghost-btn">
+          CANCELAR
+        </button>
+        <button type="submit" class="primary-btn">
+          SALVAR REGISTRO →
+        </button>
+      </div>
+
+      <p id="character-message" class="message"></p>
+    </form>
+  </dialog>
+
+  <footer>
+    <span>THE PARALLEL</span>
+    <span>ELBER-R SYSTEMS © <span id="year"></span></span>
+  </footer>
+</body>
+</html>
