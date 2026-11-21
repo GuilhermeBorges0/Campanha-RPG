@@ -1,79 +1,284 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NULL — INTERNAL TERMINAL</title>
+  <title>NULL // Internal Terminal</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js" defer></script>
 </head>
+
 <body>
+
   <div class="scanlines"></div>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark">N</span><div><strong>NULL</strong><small>INFORMATION &amp; ARCHIVE SYSTEMS</small></div></div>
-      <div class="top-status"><span class="status-dot"></span> SYSTEM ACTIVE <span class="divider">/</span> <span id="clock">00:00:00</span></div>
-    </header>
+  <div class="noise"></div>
 
-    <main>
-      <section id="auth-view" class="auth-view">
-        <div class="auth-copy">
-          <p class="eyebrow">INTERNAL TERMINAL // 00-17</p>
-          <h1>NULL<br><span>TERMINAL</span></h1>
-          <p class="intro">All information must have a record.<br>Even that which does not exist.</p>
-          <div class="auth-warning"><span>▲</span> RESTRICTED ACCESS — IDENTITY VERIFICATION REQUIRED</div>
-        </div>
-        <div class="auth-panel panel">
-          <div class="panel-head"><span>USER IDENTIFICATION</span><span class="panel-code">AUTH.01</span></div>
-          <div class="tabs"><button class="tab active" data-auth="login">SIGN IN</button><button class="tab" data-auth="signup">REGISTER</button></div>
-          <form id="auth-form">
-            <label for="email">EMAIL</label><input id="email" type="email" autocomplete="email" placeholder="user@null.system" required>
-            <label for="password">ACCESS KEY</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••••" required minlength="6">
-            <button class="primary-btn" type="submit" id="auth-submit">VERIFY IDENTITY <span>→</span></button>
-            <p id="auth-message" class="message"></p>
-          </form>
-          <p class="panel-foot">BY CONTINUING, YOU CONFIRM THAT YOU ARE AUTHORIZED TO ACCESS THIS TERMINAL.</p>
-        </div>
-      </section>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-symbol">N</div>
 
-      <section id="dashboard-view" class="hidden">
-        <div class="welcome-row">
-          <div><p class="eyebrow">OPERATOR TERMINAL</p><h2>SYSTEM OVERVIEW</h2><p class="subtext">Session verified. Records synchronized.</p></div>
-          <button id="logout-btn" class="ghost-btn">TERMINATE SESSION ↗</button>
-        </div>
-        <div class="stats-grid">
-          <div class="stat panel"><span>PERSONNEL RECORDS</span><strong id="character-count">00</strong><small>LINKED TO OPERATOR</small></div>
-          <div class="stat panel"><span>CONNECTION STATUS</span><strong class="live">STABLE</strong><small>NULL / AUTH + DB</small></div>
-          <div class="stat panel"><span>CLASSIFICAÇÃO</span><strong>INTERNAL</strong><small>NULL / ACCESS TIER 01</small></div>
-        </div>
-        <section class="characters-section">
-          <div class="section-title"><div><p class="eyebrow">DATABASE // PERSONNEL</p><h3>PERSONNEL RECORDS</h3></div><button id="new-character-btn" class="primary-btn compact"> + NEW RECORD</button></div>
-          <div id="characters-list" class="characters-grid"></div>
-          <div id="empty-state" class="empty-state hidden"><div class="empty-symbol">∅</div><h4>NO RECORDS FOUND</h4><p>Create your first personnel record to initialize the archive.</p></div>
-        </section>
-        <div class="bottom-note">NULL // RECORD INTEGRITY IS THE OPERATOR'S RESPONSIBILITY.</div>
-      </section>
-    </main>
-  </div>
-
-  <dialog id="character-dialog">
-    <form id="character-form" method="dialog">
-      <div class="dialog-head"><div><p class="eyebrow">PERSONNEL FILE // CREATE OR EDIT</p><h3 id="dialog-title">NEW PERSONNEL RECORD</h3></div><button type="button" id="close-dialog" class="close-btn">×</button></div>
-      <input type="hidden" id="character-id">
-      <label for="character-name">PERSONNEL NAME</label><input id="character-name" maxlength="80" placeholder="Name / codename" required>
-      <div class="form-grid">
-        <div><label for="character-role">OCCUPATION</label><input id="character-role" maxlength="80" placeholder="e.g. Investigator"></div>
-        <div><label for="character-origin">ORIGIN</label><input id="character-origin" maxlength="120" placeholder="City, institution, etc."></div>
+      <div class="brand-text">
+        <strong>NULL</strong>
+        <span>INFORMATION & ARCHIVE SYSTEMS</span>
       </div>
-      <label for="character-notes">NOTES / HISTORY</label><textarea id="character-notes" rows="5" placeholder="Field notes, history, observations..."></textarea>
-      <div class="dialog-actions"><button type="button" id="cancel-btn" class="ghost-btn">CANCEL</button><button type="submit" class="primary-btn">SAVE RECORD →</button></div>
-      <p id="character-message" class="message"></p>
-    </form>
+    </div>
+
+    <div class="system-status">
+      <span class="status-dot"></span>
+      SYSTEM ACTIVE
+    </div>
+  </header>
+
+  <main>
+
+    <!-- AUTHENTICATION -->
+
+    <section id="auth-view" class="auth-view">
+
+      <div class="terminal-heading">
+        <span class="eyebrow">INTERNAL TERMINAL // NODE 07</span>
+
+        <h1>NULL</h1>
+
+        <div class="subtitle">INTERNAL ACCESS TERMINAL</div>
+
+        <div class="terminal-description">
+          All information must have a record.<br>
+          Even that which does not exist.
+        </div>
+      </div>
+
+      <div class="access-warning">
+        <span class="warning-symbol">▲</span>
+        RESTRICTED ACCESS — IDENTITY VERIFICATION REQUIRED
+      </div>
+
+      <div class="auth-panel">
+
+        <div class="panel-header">
+          <span>USER IDENTIFICATION</span>
+          <span class="panel-code">AUTH_01</span>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-auth="login" type="button">
+            LOGIN
+          </button>
+
+          <button class="tab" data-auth="signup" type="button">
+            REGISTER
+          </button>
+        </div>
+
+        <form id="auth-form">
+
+          <label for="email">IDENTIFICATION ADDRESS</label>
+
+          <input
+            type="email"
+            id="email"
+            placeholder="user@null.system"
+            autocomplete="email"
+            required
+          >
+
+          <label for="password">ACCESS KEY</label>
+
+          <input
+            type="password"
+            id="password"
+            placeholder="Enter access key"
+            autocomplete="current-password"
+            required
+            minlength="6"
+          >
+
+          <button type="submit" id="auth-submit" class="primary-button">
+            VERIFY IDENTITY <span>→</span>
+          </button>
+
+          <div id="auth-message" class="message"></div>
+
+        </form>
+
+        <div class="panel-footer">
+          BY CONTINUING, YOU CONFIRM THAT YOU ARE AUTHORIZED
+          TO ACCESS THIS TERMINAL.
+        </div>
+
+      </div>
+
+      <div class="auth-bottom">
+        <span>AUTH_PROTOCOL 01</span>
+        <span>UNAUTHORIZED ACCESS IS LOGGED</span>
+      </div>
+
+    </section>
+
+
+    <!-- DASHBOARD -->
+
+    <section id="dashboard-view" class="dashboard-view hidden">
+
+      <div class="dashboard-header">
+
+        <div>
+          <span class="eyebrow">CENTRAL ARCHIVE // OVERVIEW</span>
+          <h1>ARCHIVE</h1>
+          <p>Personnel records and internal documentation.</p>
+        </div>
+
+        <button id="logout-btn" class="secondary-button">
+          TERMINATE SESSION
+        </button>
+
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <span class="stat-label">PERSONNEL RECORDS</span>
+          <strong id="character-count">00</strong>
+          <span class="stat-footer">REGISTERED FILES</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">SYSTEM STATUS</span>
+          <strong class="stat-active">ACTIVE</strong>
+          <span class="stat-footer">DATABASE CONNECTION</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">CURRENT SESSION</span>
+          <strong id="clock">00:00:00</strong>
+          <span class="stat-footer">LOCAL SYSTEM TIME</span>
+        </div>
+
+      </div>
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">DATABASE // 001</span>
+          <h2>PERSONNEL RECORDS</h2>
+        </div>
+
+        <button id="new-character-btn" class="primary-button">
+          + NEW RECORD
+        </button>
+
+      </div>
+
+      <div id="characters-list" class="characters-list"></div>
+
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">∅</div>
+        <h3>NO RECORDS FOUND</h3>
+        <p>The archive currently contains no registered personnel.</p>
+        <span>AWAITING DATA ENTRY...</span>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- CHARACTER DIALOG -->
+
+  <dialog id="character-dialog" class="character-dialog">
+
+    <div class="dialog-inner">
+
+      <div class="dialog-header">
+
+        <div>
+          <span class="eyebrow">DATABASE ENTRY // PERSONNEL</span>
+          <h2 id="dialog-title">NEW PERSONNEL RECORD</h2>
+        </div>
+
+        <button id="close-dialog" class="icon-button" type="button">
+          ×
+        </button>
+
+      </div>
+
+      <form id="character-form">
+
+        <input type="hidden" id="character-id">
+
+        <label for="character-name">PERSONNEL NAME</label>
+        <input
+          id="character-name"
+          type="text"
+          placeholder="Enter identification"
+          required
+        >
+
+        <label for="character-role">ASSIGNED ROLE</label>
+        <input
+          id="character-role"
+          type="text"
+          placeholder="Role / Classification"
+        >
+
+        <label for="character-origin">ORIGIN</label>
+        <input
+          id="character-origin"
+          type="text"
+          placeholder="Origin / Location"
+        >
+
+        <label for="character-notes">INTERNAL NOTES</label>
+        <textarea
+          id="character-notes"
+          rows="5"
+          placeholder="Additional information..."
+        ></textarea>
+
+        <div id="character-message" class="message"></div>
+
+        <div class="dialog-actions">
+
+          <button type="button" id="cancel-btn" class="secondary-button">
+            CANCEL
+          </button>
+
+          <button type="submit" class="primary-button">
+            SAVE RECORD →
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
   </dialog>
-  <footer><span>NULL</span><span>NULL ARCHIVE © <span id="year"></span></span></footer>
+
+
+  <!-- FOOTER -->
+
+  <footer class="footer">
+
+    <div class="footer-left">
+      NULL // INFORMATION & ARCHIVE SYSTEMS
+    </div>
+
+    <div class="footer-right">
+      <span>ALL ACTIVITY IS RECORDED</span>
+      <span>© <span id="year"></span></span>
+    </div>
+
+  </footer>
+
 </body>
 </html>
