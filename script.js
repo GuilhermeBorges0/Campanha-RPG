@@ -4,7 +4,7 @@
 // ============================================
 
 // COLOQUE SUAS CREDENCIAIS DO SUPABASE AQUI
-const SUPABASE_URL = "kmspdmjaygkjjdlulkmd";
+const SUPABASE_URL = "https://kmspdmjaygkjjdlulkmd.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_-Do8npRRSIRSqyMxEIcwig_cuKWcF1X";
 
 const isSupabaseConfigured =
