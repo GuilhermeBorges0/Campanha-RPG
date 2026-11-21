@@ -16,6 +16,7 @@
   </header>
 
 
+  <div class="page-layout">
   <main>
     <section id="authView" class="auth-wrap">
       <div class="panel auth-panel">
@@ -34,6 +35,12 @@
       <p id="dashboardMessage" class="message"></p><div id="characterList" class="character-grid"></div>
     </section>
   </main>
+  <aside class="anomaly-terminal" aria-label="Terminal de anomalias">
+    <div class="terminal-header"><span class="terminal-led"></span> NULL // LIVE FEED <span class="terminal-status">REC</span></div>
+    <div class="terminal-subtitle">MONITORAMENTO DE INTEGRIDADE</div>
+    <div id="terminalFeed" class="terminal-feed" aria-live="off"></div>
+  </aside>
+  </div>
 
 
   <div id="sheetModal" class="modal hidden" aria-hidden="true">

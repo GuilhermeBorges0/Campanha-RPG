@@ -1,7 +1,20 @@
 // NULL RPG — configuração Supabase. Use somente a URL e a chave publishable/anon.
 const SUPABASE_URL = "https://kmspdmjaygkjjdlulkmd.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_-Do8npRRSIRSqyMxEIcwig_cuKWcF1X";
+// Terminal de anomalias: feed rápido e contínuo, independente do login.
+(function startAnomalyFeed(){
+  const feed=document.getElementById('terminalFeed'); if(!feed)return;
+  const messages=['ANOMALIA DETECTADA','SINAL DESCONHECIDO','INTEGRIDADE: COMPROMETIDA','ORIGEM NÃO IDENTIFICADA','LEITURA DE DADOS INCONSISTENTE','ARQUIVO CORROMPIDO','PRESENÇA DETECTADA','OBSERVAÇÃO: NÃO RESPONDER','ERRO // 0xNULL','RASTRO ENCONTRADO','ANOMALIA DETECTADA','CONTENÇÃO INDEFINIDA'];
+  let n=0;
+  const addLine=()=>{const line=document.createElement('div');line.className='terminal-line';line.textContent=`[${String(n++).padStart(5,'0')}] ${messages[Math.floor(Math.random()*messages.length)]}`;feed.appendChild(line);while(feed.children.length>90)feed.removeChild(feed.firstChild);feed.scrollTop=feed.scrollHeight;};
+  for(let i=0;i<35;i++)addLine();
+  setInterval(addLine,55);
+})();
+
+
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+
 
 const $ = (id) => document.getElementById(id);
 const DICE = ["d4","d6","d8","d10","d12"];
@@ -16,14 +29,16 @@ function attrSelect(value){return `<select>${ATTRS.map(a=>`<option value="${a.ke
 function setMessage(id,text,isError=false){$(id).textContent=text;$(id).style.color=isError?"var(--red)":"var(--green)";}
 function showAuth(){ $('authView').classList.remove('hidden');$('dashboardView').classList.add('hidden');$('logoutBtn').classList.add('hidden');}
 function showDashboard(){ $('authView').classList.add('hidden');$('dashboardView').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');loadCharacters();}
-async function loadCharacters(){if(!user)return;setMessage('dashboardMessage','Consultando arquivo...');const {data,error}=await supabaseClient.from('characters').select('*').order('updated_at',{ascending:false});if(error){setMessage('dashboardMessage',error.message,true);return;}characterCache=data||[];setMessage('dashboardMessage',`${characterCache.length} registro(s) encontrado(s).`);renderCharacterCards();}
-function renderCharacterCards(){const host=$('characterList');host.innerHTML='';characterCache.forEach(c=>{const card=document.createElement('article');card.className='character-card';const data=c.data||{};card.innerHTML=`<p class="eyebrow">DOSSIER // ${String(c.id).slice(0,8)}</p><h3>${escapeHtml(c.name||'SEM NOME')}</h3><p>${escapeHtml(data.origin||'Origem não registrada')} · ${escapeHtml(data.class||'Classe não registrada')}</p><div class="card-actions"><button data-edit="${c.id}">ABRIR</button><button class="secondary" data-delete="${c.id}">EXCLUIR</button></div>`;host.append(card);});host.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openSheet(characterCache.find(c=>c.id===b.dataset.edit)));host.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteCharacter(b.dataset.delete));}
+const MAX_CHARACTERS=4;
+function updateCharacterLimit(){const b=$('newCharacterBtn');if(!b)return;const count=characterCache.length;b.disabled=count>=MAX_CHARACTERS;b.textContent=count>=MAX_CHARACTERS?'LIMITE DE 4 REGISTROS ATINGIDA':`+ NOVO REGISTRO (${count}/${MAX_CHARACTERS})`;}
+async function loadCharacters(){if(!user)return;setMessage('dashboardMessage','Consultando arquivo...');const {data,error}=await supabaseClient.from('characters').select('*').order('updated_at',{ascending:false});if(error){setMessage('dashboardMessage',error.message,true);return;}characterCache=data||[];setMessage('dashboardMessage',`${characterCache.length}/${MAX_CHARACTERS} registros utilizados.`);renderCharacterCards();updateCharacterLimit();}
+function renderCharacterCards(){const host=$('characterList');host.innerHTML='';characterCache.forEach(c=>{const card=document.createElement('article');card.className='character-card';const data=c.data||{};card.innerHTML=`<p class="eyebrow">DOSSIER // ${String(c.id).slice(0,8)}</p><h3>${escapeHtml(c.name||'SEM NOME')}</h3><p>${escapeHtml(data.occupation||data.origin||'Ocupação não registrada')} · ${escapeHtml(data.class||'Classe não registrada')}</p><div class="card-actions"><button data-edit="${c.id}">ABRIR</button><button class="secondary" data-delete="${c.id}">EXCLUIR</button></div>`;host.append(card);});host.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openSheet(characterCache.find(c=>c.id===b.dataset.edit)));host.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteCharacter(b.dataset.delete));}
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 $('authForm').addEventListener('submit',async e=>{e.preventDefault();setMessage('authMessage','Verificando acesso...');const email=$('email').value.trim(),password=$('password').value;const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){setMessage('authMessage',error.message,true);return;}user=data.user;showDashboard();});
 $('registerBtn').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;if(!email||password.length<6){setMessage('authMessage','Informe e-mail e senha com pelo menos 6 caracteres.',true);return;}setMessage('authMessage','Criando acesso...');const {data,error}=await supabaseClient.auth.signUp({email,password});if(error){setMessage('authMessage',error.message,true);return;}setMessage('authMessage','Cadastro enviado. Verifique seu e-mail para confirmar, se a confirmação estiver habilitada.');};
 $('logoutBtn').onclick=async()=>{await supabaseClient.auth.signOut();user=null;showAuth();};
 supabaseClient.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)showDashboard();else showAuth();});
-$('newCharacterBtn').onclick=()=>openSheet(null);$('closeSheetBtn').onclick=$('cancelSheetBtn').onclick=closeSheet;
+$('newCharacterBtn').onclick=()=>{if(characterCache.length>=MAX_CHARACTERS){setMessage('dashboardMessage','LIMITE DE 4 PERSONAGENS ATINGIDO.',true);updateCharacterLimit();return;}openSheet(null);};$('closeSheetBtn').onclick=$('cancelSheetBtn').onclick=closeSheet;
 function openSheet(record){sheetData=record?normalizeData(record.data):emptyData();$('characterId').value=record?.id||'';$('charName').value=record?.name||'';$('playerName').value=sheetData.player;$('origin').value=sheetData.origin;$('charClass').value=sheetData.class;$('codename').value=sheetData.codename;$('charDescription').value=sheetData.description;setMessage('saveMessage','');renderAttributes();renderResources();renderSkills();renderAbilities();renderItems();renderWeapons();renderProtections();renderLoad();switchTab('identificacao');switchInv('items');$('sheetTitle').textContent=record?'EDITAR DOSSIER':'NOVO PERSONAGEM';$('sheetModal').classList.remove('hidden');$('sheetModal').setAttribute('aria-hidden','false');}
 function closeSheet(){$('sheetModal').classList.add('hidden');$('sheetModal').setAttribute('aria-hidden','true');}
 function normalizeData(d){const base=emptyData();return {...base,...(d||{}),attributes:{...base.attributes,...(d?.attributes||{})},resources:{...base.resources,...(d?.resources||{})},skills:Array.isArray(d?.skills)?d.skills:[],abilities:Array.isArray(d?.abilities)?d.abilities:[],items:Array.isArray(d?.items)?d.items:[],weapons:Array.isArray(d?.weapons)?d.weapons:[],protections:Array.isArray(d?.protections)?d.protections:[]};}
